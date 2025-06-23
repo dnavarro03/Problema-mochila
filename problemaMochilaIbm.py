@@ -7,7 +7,7 @@ from qiskit_algorithms.optimizers import COBYLA
 from qiskit.primitives import Sampler
 
 # Datos del problema
-values = [60, 100, 120]
+values = [60, 100, 220]
 weights = [1, 2, 3]
 max_weight = 3
 
