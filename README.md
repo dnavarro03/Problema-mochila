@@ -15,7 +15,7 @@ Para resolver el mismo problema utilizando quantum annealing con D-Wave, se requ
 pip install "dimod==0.12.20" "numpy==2.2.6" "setuptools==65.5.0"
 ```
 
-#Variables de entorno
+## Variables de entorno
 Cada entorno (Qiskit o D-Wave) debe configurarse dentro de su propio entorno virtual para evitar conflictos de dependencias entre bibliotecas. A continuación se muestran los comandos básicos para crear y activar un entorno virtual(Windows):  
 
 Qiskit:  
