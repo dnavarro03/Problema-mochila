@@ -49,6 +49,22 @@ try:
     print(f"Valor total: {valor_total}")
     print(f"Tiempo de ejecución: {tiempo:.4f} segundos")
 
+        # 🧠 Mostrar los bitstrings más probables
+    eigenstate = result.min_eigen_solver_result.eigenstate
+    if hasattr(eigenstate, 'binary_probabilities'):
+        probs = eigenstate.binary_probabilities()
+        print("\n🎯 Bitstrings más probables:")
+        print(f"{'Bitstring':<10} {'Valor':>6} {'Peso':>6} {'Probabilidad':>14}")
+        print("-" * 40)
+
+        for bitstring, prob in sorted(probs.items(), key=lambda x: x[1], reverse=True)[:10]:
+            bits = [int(b) for b in bitstring[::-1][:len(weights)]]  # invertir y cortar a n bits
+            peso = sum(weights[i] for i, b in enumerate(bits) if b)
+            valor = sum(values[i] for i, b in enumerate(bits) if b)
+            print(f"{bitstring:<10} {valor:>6} {peso:>6} {prob*100:>10.3f} %")
+    else:
+        print("⚠️ No se pudieron obtener probabilidades del estado final.")
+
     # Obtener parámetros desde result
     optimal_params = result.min_eigen_solver_result.optimal_point
     param_dict = dict(zip(qaoa.ansatz.parameters, optimal_params))
