@@ -6,7 +6,7 @@ El Script adjuntado genera un grafico para la visualización correcta de la comp
 Entorno para graficar  
 Este script usa Python 3.12, matploplib y numpy para funcionar. Puedes instalar las dependencias con:
 ```bash
-pip install matplotlib==3.10.3 numpy==2.3.1
+pip pip install matplotlib==3.10.3 numpy==2.3.1
 
 ```
 
