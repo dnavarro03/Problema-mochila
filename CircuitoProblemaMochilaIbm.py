@@ -75,8 +75,8 @@ def main():
     values = [60, 100, 220]
     weights = [1, 2, 3]
     max_weight = 3
-    reps = 3
-    maxiter = 300
+    reps = 5
+    maxiter = 500
 
     try:
         validarPeso(weights, max_weight)
