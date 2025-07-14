@@ -1,69 +1,86 @@
 import time
-from itertools import combinations
 from dimod import BinaryQuadraticModel, ExactSolver
 
-# Datos del problema
-values = [60, 100, 120]
-weights = [1, 2, 3]
-max_weight = 3
-num_items = len(values)
 
-try:
-    # Validar peso máximo
+def validar_datos(weights, max_weight):
     if max_weight >= sum(weights):
         raise ValueError("Error: El peso máximo debe ser menor que el peso total de todos los objetos.")
 
-    # Construir QUBO manualmente
+def construir_qubo(values, weights, max_weight):
+    num_items = len(values)
     Q = {}
 
-    # Coeficientes lineales (valor negativo)
+    # Coeficientes lineales (objetivo: maximizar valor)
     for i in range(num_items):
         Q[(i, i)] = -values[i]
 
-    # Coeficientes cuadráticos (restricción peso)
-    penalty_coeff_A = sum(values) + 1 
+    # Penalización por violar restricción de peso
+    A = sum(values) + 1
 
+    # Términos cuadráticos para penalización (i ≠ j)
     for i in range(num_items):
-        Q[(i, i)] += penalty_coeff_A * (weights[i] ** 2)
+        Q[(i, i)] += A * (weights[i] ** 2)  # Término cuadrático en la diagonal
         for j in range(i + 1, num_items):
-            Q[(i, j)] = Q.get((i, j), 0) + 2 * penalty_coeff_A * weights[i] * weights[j]
+            Q[(i, j)] = Q.get((i, j), 0) + 2 * A * weights[i] * weights[j]
 
-    # Ajuste lineal para la restricción de peso
+    # Ajuste lineal por el término cruzado con peso máximo
     for i in range(num_items):
-        Q[(i, i)] += -2 * penalty_coeff_A * max_weight * weights[i]
+        Q[(i, i)] += -2 * A * max_weight * weights[i]
 
-    # Crear modelo BQM para D-Wave
-    bqm = BinaryQuadraticModel.from_qubo({(f'x_{i}', f'x_{j}'): coeff for (i, j), coeff in Q.items()})
+    return Q
 
-    print(f"QUBO (BQM) creado con {len(bqm.variables)} variables.")
+def convertir_a_bqm(Q):
+    return BinaryQuadraticModel.from_qubo({(f'x_{i}', f'x_{j}'): coeff for (i, j), coeff in Q.items()})
 
-    # Usar ExactSolver clásico y exacto
+def resolver_bqm(bqm):
     solver = ExactSolver()
+    inicio = time.time()
+    sampleset = solver.sample(bqm)
+    fin = time.time()
+    return sampleset, fin - inicio
 
-    start_time = time.time()
-    sampleset = solver.sample(bqm) 
-    end_time = time.time()
-    execution_time = end_time - start_time
-    print(f"Tiempo de ejecución: {execution_time:.4f} segundos")
-
-    # Obtener mejor solución y energía
+def interpretar_solucion(sampleset, values, weights):
     best_sample = sampleset.first.sample
-    best_energy = sampleset.first.energy
+    energy = sampleset.first.energy
 
-    print(f"\nMejor solución (energía: {best_energy:.4f}):")
-    
-    # Extraer ítems seleccionados
-    items_seleccionados = [i for i in range(num_items) if best_sample.get(f'x_{i}', 0) > 0.5]
-
+    items_seleccionados = [
+        i for i in range(len(values)) if best_sample.get(f'x_{i}', 0) > 0.5
+    ]
     peso_total = sum(weights[i] for i in items_seleccionados)
     valor_total = sum(values[i] for i in items_seleccionados)
 
-    print(f"Items seleccionados: {items_seleccionados}")
-    print(f"Peso total: {peso_total}")
-    print(f"Valor total: {valor_total}")
-    print(f"Tiempo total: {execution_time:.4f} segundos\n")
+    return items_seleccionados, peso_total, valor_total, energy
 
-except ValueError as e:
-    print(f"\n[ERROR] {e}")
-except Exception as e:
-    print(f"\n[ERROR INESPERADO] {e}")
+
+def main():
+    # Datos de entrada
+    values = [60, 100, 120]
+    weights = [1, 2, 3]
+    max_weight = 3
+
+    try:
+        validar_datos(weights, max_weight)
+
+        Q = construir_qubo(values, weights, max_weight)
+        bqm = convertir_a_bqm(Q)
+        print(f"QUBO (BQM) creado con {len(bqm.variables)} variables.")
+
+        sampleset, tiempo = resolver_bqm(bqm)
+        print(f"Tiempo de ejecución: {tiempo:.4f} segundos")
+
+        items, peso_total, valor_total, energia = interpretar_solucion(sampleset, values, weights)
+
+        print(f"\nMejor solución (energía: {energia:.4f}):")
+        print(f"Items seleccionados: {items}")
+        print(f"Peso total: {peso_total}")
+        print(f"Valor total: {valor_total}")
+        print(f"Tiempo total: {tiempo:.4f} segundos\n")
+
+    except ValueError as e:
+        print(f"\n[ERROR] {e}")
+    except Exception as e:
+        print(f"\n[ERROR INESPERADO] {e}")
+
+
+if __name__ == "__main__":
+    main()

@@ -6,49 +6,65 @@ from qiskit_algorithms.minimum_eigensolvers import QAOA
 from qiskit_algorithms.optimizers import COBYLA
 from qiskit.primitives import Sampler
 
-# Datos del problema
-values = [60, 100, 220]
-weights = [1, 2, 3]
-max_weight = 3
 
-try:
-    # Validar que el problema no sea trivial
+def validar_datos(weights, max_weight):
     if max_weight >= sum(weights):
-        raise ValueError("Error: El peso máximo no debe ser igual o mayor a la suma total de los pesos de los objetos.")
+        raise ValueError("El peso máximo no debe ser igual o mayor a la suma total de los pesos.")
 
-    # Crear el problema de la mochila como modelo QUBO
-    kp = Knapsack(values, weights, max_weight)
-    qp = kp.to_quadratic_program()
+def construir_qubo_knapsack(values, weights, max_weight):
+    problema_knapsack = Knapsack(values, weights, max_weight)
+    qp = problema_knapsack.to_quadratic_program()
     qubo = QuadraticProgramToQubo().convert(qp)
+    return qubo
 
-    # Crear sampler y optimizador clásico
+def configurar_qaoa():
     sampler = Sampler()
-    optimizer_clasico = COBYLA(maxiter=100)
+    optimizador = COBYLA(maxiter=100)
+    qaoa = QAOA(sampler=sampler, optimizer=optimizador, reps=1)
+    return MinimumEigenOptimizer(qaoa)
 
-    # Crear instancia QAOA
-    qaoa = QAOA(sampler=sampler, optimizer=optimizer_clasico, reps=1)
-
-    # Ejecutar y medir tiempo
-    start_time = time.time()
-    solver = MinimumEigenOptimizer(qaoa)
+def resolver_mochila_qaoa(qubo, solver):
+    inicio = time.time()
     resultado = solver.solve(qubo)
-    end_time = time.time()
+    fin = time.time()
+    return resultado, fin - inicio
 
-    # Extraer resultados
+def interpretar_resultado(resultado, values, weights):
     variables = resultado.x
-    items_seleccionados = [i for i, selected in enumerate(variables) if selected > 0.5]
-    peso_total = sum(weights[i] for i in items_seleccionados)
-    valor_total = sum(values[i] for i in items_seleccionados)
-    tiempo = end_time - start_time
+    items = [i for i, val in enumerate(variables) if val > 0.5]
+    peso = sum(weights[i] for i in items)
+    valor = sum(values[i] for i in items)
+    return items, peso, valor
 
-    # Mostrar resultados
+def mostrar_resultados(items, peso, valor, tiempo):
     print("\nResultados del problema de la mochila con QAOA:")
-    print(f"Items seleccionados: {items_seleccionados}")
-    print(f"Peso total: {peso_total}")
-    print(f"Valor total: {valor_total}")
+    print(f"Items seleccionados: {items}")
+    print(f"Peso total: {peso}")
+    print(f"Valor total: {valor}")
     print(f"Tiempo de ejecución: {tiempo:.4f} segundos\n")
 
-except ValueError as e:
-    print(f"\n[ERROR] {e}")
-except Exception as e:
-    print(f"\n[ERROR INESPERADO] {e}")
+
+def main():
+    # Datos del problema
+    values = [60, 100, 220]
+    weights = [1, 2, 3]
+    max_weight = 3
+
+    try:
+        validar_datos(weights, max_weight)
+
+        qubo = construir_qubo_knapsack(values, weights, max_weight)
+        solver = configurar_qaoa()
+
+        resultado, tiempo = resolver_mochila_qaoa(qubo, solver)
+        items, peso_total, valor_total = interpretar_resultado(resultado, values, weights)
+
+        mostrar_resultados(items, peso_total, valor_total, tiempo)
+
+    except ValueError as e:
+        print(f"\n[ERROR] {e}")
+    except Exception as e:
+        print(f"\n[ERROR INESPERADO] {e}")
+
+if __name__ == "__main__":
+    main()
