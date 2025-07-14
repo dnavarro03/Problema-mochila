@@ -1,4 +1,5 @@
 import time
+import os
 from qiskit_optimization.applications import Knapsack
 from qiskit_optimization.converters import QuadraticProgramToQubo
 from qiskit_optimization.algorithms import MinimumEigenOptimizer
@@ -65,9 +66,12 @@ def exportarCircuito(qaoa, result, nombre_archivo="qaoa_knapsack.qasm"):
     circuito = qaoa.ansatz.assign_parameters(param_dict)
     circuito_qasm = transpile(circuito, basis_gates=["u3", "cx"], optimization_level=0)
 
-    with open(nombre_archivo, "w") as f:
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    output_path = os.path.join(script_dir, nombre_archivo)
+
+    with open(output_path, "w") as f:
         f.write(circuito_qasm.qasm())
-    print(f"✅ Circuito exportado correctamente como '{nombre_archivo}'")
+    print(f"✅ Circuito exportado correctamente como '{output_path}'")
 
 def main():
     # Parámetros del problema
