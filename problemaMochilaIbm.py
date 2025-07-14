@@ -7,36 +7,36 @@ from qiskit_algorithms.optimizers import COBYLA
 from qiskit.primitives import Sampler
 
 
-def validar_datos(weights, max_weight):
+def validarDatos(weights, max_weight):
     if max_weight >= sum(weights):
         raise ValueError("El peso máximo no debe ser igual o mayor a la suma total de los pesos.")
 
-def construir_qubo_knapsack(values, weights, max_weight):
+def construirQuboKnapsack(values, weights, max_weight):
     problema_knapsack = Knapsack(values, weights, max_weight)
     qp = problema_knapsack.to_quadratic_program()
     qubo = QuadraticProgramToQubo().convert(qp)
     return qubo
 
-def configurar_qaoa():
+def configurarQaoa():
     sampler = Sampler()
     optimizador = COBYLA(maxiter=100)
     qaoa = QAOA(sampler=sampler, optimizer=optimizador, reps=1)
     return MinimumEigenOptimizer(qaoa)
 
-def resolver_mochila_qaoa(qubo, solver):
+def resolverMochilaQaoa(qubo, solver):
     inicio = time.time()
     resultado = solver.solve(qubo)
     fin = time.time()
     return resultado, fin - inicio
 
-def interpretar_resultado(resultado, values, weights):
+def interpretarResultado(resultado, values, weights):
     variables = resultado.x
     items = [i for i, val in enumerate(variables) if val > 0.5]
     peso = sum(weights[i] for i in items)
     valor = sum(values[i] for i in items)
     return items, peso, valor
 
-def mostrar_resultados(items, peso, valor, tiempo):
+def mostrarResultados(items, peso, valor, tiempo):
     print("\nResultados del problema de la mochila con QAOA:")
     print(f"Items seleccionados: {items}")
     print(f"Peso total: {peso}")
@@ -51,15 +51,15 @@ def main():
     max_weight = 3
 
     try:
-        validar_datos(weights, max_weight)
+        validarDatos(weights, max_weight)
 
-        qubo = construir_qubo_knapsack(values, weights, max_weight)
-        solver = configurar_qaoa()
+        qubo = construirQuboKnapsack(values, weights, max_weight)
+        solver = configurarQaoa()
 
-        resultado, tiempo = resolver_mochila_qaoa(qubo, solver)
-        items, peso_total, valor_total = interpretar_resultado(resultado, values, weights)
+        resultado, tiempo = resolverMochilaQaoa(qubo, solver)
+        items, peso_total, valor_total = interpretarResultado(resultado, values, weights)
 
-        mostrar_resultados(items, peso_total, valor_total, tiempo)
+        mostrarResultados(items, peso_total, valor_total, tiempo)
 
     except ValueError as e:
         print(f"\n[ERROR] {e}")

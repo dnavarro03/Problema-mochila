@@ -2,11 +2,11 @@ import time
 from dimod import BinaryQuadraticModel, ExactSolver
 
 
-def validar_datos(weights, max_weight):
+def validarDatos(weights, max_weight):
     if max_weight >= sum(weights):
         raise ValueError("Error: El peso máximo debe ser menor que el peso total de todos los objetos.")
 
-def construir_qubo(values, weights, max_weight):
+def construirQubo(values, weights, max_weight):
     num_items = len(values)
     Q = {}
 
@@ -29,17 +29,17 @@ def construir_qubo(values, weights, max_weight):
 
     return Q
 
-def convertir_a_bqm(Q):
+def convertirABqm(Q):
     return BinaryQuadraticModel.from_qubo({(f'x_{i}', f'x_{j}'): coeff for (i, j), coeff in Q.items()})
 
-def resolver_bqm(bqm):
+def resolverBqm(bqm):
     solver = ExactSolver()
     inicio = time.time()
     sampleset = solver.sample(bqm)
     fin = time.time()
     return sampleset, fin - inicio
 
-def interpretar_solucion(sampleset, values, weights):
+def interpretarSolucion(sampleset, values, weights):
     best_sample = sampleset.first.sample
     energy = sampleset.first.energy
 
@@ -59,16 +59,16 @@ def main():
     max_weight = 3
 
     try:
-        validar_datos(weights, max_weight)
+        validarDatos(weights, max_weight)
 
-        Q = construir_qubo(values, weights, max_weight)
-        bqm = convertir_a_bqm(Q)
+        Q = construirQubo(values, weights, max_weight)
+        bqm = convertirABqm(Q)
         print(f"QUBO (BQM) creado con {len(bqm.variables)} variables.")
 
-        sampleset, tiempo = resolver_bqm(bqm)
+        sampleset, tiempo = resolverBqm(bqm)
         print(f"Tiempo de ejecución: {tiempo:.4f} segundos")
 
-        items, peso_total, valor_total, energia = interpretar_solucion(sampleset, values, weights)
+        items, peso_total, valor_total, energia = interpretarSolucion(sampleset, values, weights)
 
         print(f"\nMejor solución (energía: {energia:.4f}):")
         print(f"Items seleccionados: {items}")

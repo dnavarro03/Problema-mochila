@@ -1,6 +1,6 @@
 import time
 
-def knapsack_dp(values, weights, max_weight):
+def knapsackDp(values, weights, max_weight):
     n = len(values)
     dp = [[0] * (max_weight + 1) for _ in range(n + 1)]
 
@@ -16,12 +16,12 @@ def knapsack_dp(values, weights, max_weight):
                 dp[i][w] = dp[i - 1][w]
 
     # Reconstruir solución óptima
-    selected = reconstruir_seleccion(dp, weights, n, max_weight)
+    selected = reconstruirSeleccion(dp, weights, n, max_weight)
     total_value = dp[n][max_weight]
 
     return total_value, selected
 
-def reconstruir_seleccion(dp, weights, n, max_weight):
+def reconstruirSeleccion(dp, weights, n, max_weight):
     w = max_weight
     selected = [0] * n
 
@@ -32,7 +32,7 @@ def reconstruir_seleccion(dp, weights, n, max_weight):
 
     return selected
 
-def imprimir_resultados(values, weights, selected, total_value, exec_time):
+def imprimirResultados(values, weights, selected, total_value, exec_time):
     print("\nObjetos seleccionados:")
     for i in range(len(selected)):
         if selected[i]:
@@ -53,12 +53,12 @@ def main():
 
     # Resolver problema con medición de tiempo
     start = time.time()
-    total_value, selected = knapsack_dp(values, weights, max_weight)
+    total_value, selected = knapsackDp(values, weights, max_weight)
     end = time.time()
     exec_time = end - start
 
     # Mostrar resultados
-    imprimir_resultados(values, weights, selected, total_value, exec_time)
+    imprimirResultados(values, weights, selected, total_value, exec_time)
 
 if __name__ == "__main__":
     main()
