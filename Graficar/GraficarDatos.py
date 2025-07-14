@@ -13,7 +13,7 @@ max_objetos_proyeccion = 20
 
 # Funciones utilitarias
 
-def forzar_monotonia_no_decreciente(arr):
+def forzarMonotoniaNoDecreciente(arr):
     arr_mon = arr.copy()
     for i in range(1, len(arr_mon)):
         if arr_mon[i] < arr_mon[i - 1]:
@@ -21,7 +21,7 @@ def forzar_monotonia_no_decreciente(arr):
     return arr_mon
 
 
-def proyectar_tiempos(cantidades_objetos, cantidades_reales, tiempos_reales, grado_pol):
+def proyectarTiempos(cantidades_objetos, cantidades_reales, tiempos_reales, grado_pol):
     """Interpola y proyecta los tiempos a futuro asegurando que no decrezcan."""
     interpolados = np.interp(cantidades_objetos, cantidades_reales, tiempos_reales)
     modelo = np.poly1d(np.polyfit(cantidades_reales, tiempos_reales, grado_pol))
@@ -31,10 +31,10 @@ def proyectar_tiempos(cantidades_objetos, cantidades_reales, tiempos_reales, gra
     for i in range(limite_real + 1, len(cantidades_objetos)):
         proyeccion[i] = max(modelo(i), proyeccion[i - 1], 0)
 
-    return forzar_monotonia_no_decreciente(proyeccion), modelo
+    return forzarMonotoniaNoDecreciente(proyeccion), modelo
 
 
-def estimar_punto_corte_teorico(modelo_clasico, modelo_cuantico, limite_real):
+def estimarPuntoCorteTeorico(modelo_clasico, modelo_cuantico, limite_real):
     modelo_dif = modelo_clasico - modelo_cuantico
     coefs_dif = modelo_dif.coefficients[::-1]
     raices = Polynomial(coefs_dif).roots()
@@ -43,12 +43,12 @@ def estimar_punto_corte_teorico(modelo_clasico, modelo_cuantico, limite_real):
     return min(candidatas) if candidatas else None
 
 
-def detectar_punto_corte(diferencias):
+def detectarPuntoCorte(diferencias):
     indices = np.where(diferencias > 0)[0]
     return indices[0] if len(indices) > 0 else None
 
 
-def graficar_resultados(cantidades_objetos, tiempos_clasico, tiempos_cuantico,
+def graficarResultados(cantidades_objetos, tiempos_clasico, tiempos_cuantico,
                         punto_corte, punto_corte_teorico, max_objetos_proyeccion):
     plt.figure(figsize=(12, 6))
     plt.plot(cantidades_objetos, tiempos_clasico, 'b-', label='Clásico')
@@ -80,16 +80,16 @@ def graficar_resultados(cantidades_objetos, tiempos_clasico, tiempos_cuantico,
 
 cantidades_objetos = np.arange(0, max_objetos_proyeccion + 1)
 
-tiempos_clasico, modelo_clasico = proyectar_tiempos(
+tiempos_clasico, modelo_clasico = proyectarTiempos(
     cantidades_objetos, cantidades_objetos_reales, tiempos_clasico_reales, grado_pol=3)
 
-tiempos_cuantico, modelo_cuantico = proyectar_tiempos(
+tiempos_cuantico, modelo_cuantico = proyectarTiempos(
     cantidades_objetos, cantidades_objetos_reales, tiempos_cuantico_reales, grado_pol=1)
 
 diferencias = tiempos_clasico - tiempos_cuantico
 
-punto_corte = detectar_punto_corte(diferencias)
-punto_corte_teorico = estimar_punto_corte_teorico(modelo_clasico, modelo_cuantico, cantidades_objetos_reales[-1])
+punto_corte = detectarPuntoCorte(diferencias)
+punto_corte_teorico = estimarPuntoCorteTeorico(modelo_clasico, modelo_cuantico, cantidades_objetos_reales[-1])
 
 # Mensajes en consola
 
@@ -104,5 +104,5 @@ else:
 
 # Gráfico final
 
-graficar_resultados(cantidades_objetos, tiempos_clasico, tiempos_cuantico,
+graficarResultados(cantidades_objetos, tiempos_clasico, tiempos_cuantico,
                     punto_corte, punto_corte_teorico, max_objetos_proyeccion)
