@@ -47,9 +47,9 @@ def imprimirResultados(values, weights, selected, total_value, exec_time):
 
 def main():
     # Datos de entrada
-    values = [120, 340, 180, 220, 90, 310]
-    weights = [10, 30, 20, 25, 5, 40]
-    max_weight = 100
+    values = [60, 100, 120]
+    weights = [1, 2 ,3]
+    max_weight = 5
 
     # Resolver problema con medición de tiempo
     start = time.time()

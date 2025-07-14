@@ -56,7 +56,7 @@ def main():
     # Datos de entrada
     values = [60, 100, 120]
     weights = [1, 2, 3]
-    max_weight = 3
+    max_weight = 5
 
     try:
         validarDatos(weights, max_weight)
